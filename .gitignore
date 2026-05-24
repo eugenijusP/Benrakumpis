@@ -1,0 +1,27 @@
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/.vs/
+backend/**/*.DotSettings.user
+
+# .NET secrets
+backend/**/appsettings.*.json
+!backend/**/appsettings.json
+!backend/**/appsettings.Development.json
+
+# Frontend
+frontend-html5/node_modules/
+frontend-html5/dist/
+frontend-html5/.env.local
+frontend-html5/.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
