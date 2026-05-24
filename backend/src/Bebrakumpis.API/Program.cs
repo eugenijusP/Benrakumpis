@@ -1,23 +1,18 @@
 using System.Text;
-using Bebrakumpis.Application.Features.Auth.Commands;
-using Bebrakumpis.Application.Features.Auth.Queries;
+using Bebrakumpis.Application;
 using Bebrakumpis.Infrastructure;
 using Bebrakumpis.API.Migrations;
+using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-
-using Dapper;
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
-
-// Auth feature
-builder.Services.AddScoped<LoginCommand>();
-builder.Services.AddScoped<GetMeQuery>();
 builder.Services.AddScoped<MigrationRunner>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -59,8 +54,9 @@ if (!string.IsNullOrEmpty(builder.Configuration["ApplicationInsights:ConnectionS
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var migrationRunner = scope.ServiceProvider.GetRequiredService<MigrationRunner>();
     await migrationRunner.RunAsync();
 }

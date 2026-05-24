@@ -1,25 +1,28 @@
 using System.Security.Claims;
+using Bebrakumpis.Application.Common.CQRS;
 using Bebrakumpis.Application.Common.Result;
 using Bebrakumpis.Application.Features.Auth.DTOs;
 
 namespace Bebrakumpis.Application.Features.Auth.Queries;
 
-public class GetMeQuery
+public record GetMeQuery(ClaimsPrincipal Principal) : IRequest<Result<MeResponse>>;
+
+public class GetMeQueryHandler : IRequestHandler<GetMeQuery, Result<MeResponse>>
 {
-    public Result<MeResponse> Execute(ClaimsPrincipal principal)
+    public Task<Result<MeResponse>> HandleAsync(GetMeQuery query, CancellationToken ct)
     {
-        var sub = principal.FindFirst("sub")?.Value;
+        var sub = query.Principal.FindFirst("sub")?.Value;
         if (sub is null || !Guid.TryParse(sub, out var userId))
-            return Result<MeResponse>.Unauthorized("Not authenticated.");
+            return Task.FromResult(Result<MeResponse>.Unauthorized("Not authenticated."));
 
-        var username = principal.FindFirst("username")?.Value ?? string.Empty;
-        var role = principal.FindFirst("role")?.Value ?? string.Empty;
+        var username = query.Principal.FindFirst("username")?.Value ?? string.Empty;
+        var role = query.Principal.FindFirst("role")?.Value ?? string.Empty;
 
-        return Result<MeResponse>.Success(new MeResponse
+        return Task.FromResult(Result<MeResponse>.Success(new MeResponse
         {
             Id = userId,
             Username = username,
             Role = role
-        });
+        }));
     }
 }

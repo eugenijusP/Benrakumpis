@@ -1,31 +1,30 @@
+using Bebrakumpis.Application.Common.CQRS;
 using Bebrakumpis.Application.Common.Result;
 using Bebrakumpis.Application.Features.Auth.DTOs;
-using Bebrakumpis.Application.Features.Auth.Validators;
 using Bebrakumpis.Application.Interfaces;
-using Bebrakumpis.Domain.Exceptions;
 using Bebrakumpis.Domain.Interfaces;
+using FluentValidation;
 
 namespace Bebrakumpis.Application.Features.Auth.Commands;
 
-public class LoginCommand(IUserRepository userRepository, ITokenService tokenService, IPasswordHasher passwordHasher)
-{
-    public async Task<Result<string>> ExecuteAsync(
-        LoginRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        var validator = new LoginRequestValidator();
-        var validation = await validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            var errors = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage));
-            throw new DomainValidationException([errors]);
-        }
+public record LoginCommand(string Username, string Password) : IRequest<Result<string>>;
 
-        var user = await userRepository.GetByUsernameAsync(request.Username, cancellationToken);
-        if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
+public class LoginCommandHandler(
+    IUserRepository userRepository,
+    ITokenService tokenService,
+    IPasswordHasher passwordHasher,
+    IValidator<LoginCommand> validator) : IRequestHandler<LoginCommand, Result<string>>
+{
+    public async Task<Result<string>> HandleAsync(LoginCommand command, CancellationToken ct)
+    {
+        var validation = await validator.ValidateAsync(command, ct);
+        if (!validation.IsValid)
+            return Result<string>.ValidationFailure(validation.Errors.Select(e => e.ErrorMessage));
+
+        var user = await userRepository.GetByUsernameAsync(command.Username, ct);
+        if (user is null || !passwordHasher.Verify(command.Password, user.PasswordHash))
             return Result<string>.Unauthorized("Invalid username or password.");
 
-        var token = tokenService.GenerateToken(user);
-        return Result<string>.Success(token);
+        return Result<string>.Success(tokenService.GenerateToken(user));
     }
 }
