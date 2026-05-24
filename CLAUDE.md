@@ -42,8 +42,8 @@ src/
 │   │       ├── Queries/
 │   │       ├── DTOs/
 │   │       ├── Validators/
-│   │       └── Mappings/    # present in some features (e.g. PdfImport, PdfTemplate)
-│   └── Interfaces/          # IService contracts (ITokenService, IPdfParserService, etc.)
+│   │       └── Mappings/    # present in some features
+│   └── Interfaces/          # IService contracts (ITokenService, etc.)
 ├── Infrastructure/          # Dapper repos, DB connection, external services
 │   ├── Persistence/
 │   │   ├── Repositories/
@@ -149,7 +149,7 @@ src/
 
 ### Testing
 - **Backend unit**: xUnit + Moq; test Application layer handlers and validators
-- **Backend integration**: xUnit + `WebApplicationFactory` + SQLite in-memory (`Microsoft.Data.Sqlite`); test full request/response via `HttpClient`; snapshot assertions with `Verify.Xunit`
+- **Backend integration**: xUnit + `WebApplicationFactory` + SQLite in-memory (`Microsoft.Data.Sqlite`); test full request/response via `HttpClient`
 - Name tests: `{method/scenario}_Should{ExpectedBehavior}_When{Condition}`
 
 ### Git
@@ -185,7 +185,7 @@ npm run dev   # http://localhost:5174
 ### Build
 ```bash
 # Backend
-cd backend && dotnet build Bebrakumpis.sln
+cd backend && dotnet build Bebrakumpis.slnx
 
 # Frontend
 cd frontend-html5 && npm run build
@@ -230,9 +230,8 @@ cd frontend-html5 && npm run build
 - **Backend**: Dockerized .NET app deployed to **Azure App Service** (container). Image built and pushed to **Azure Container Registry** (ACR) by GitHub Actions on push to `main`.
 - **Frontend**: Static files deployed to **Azure Static Web Apps** via `Azure/static-web-apps-deploy` action; `VITE_API_BASE_URL` injected at build time from GitHub secret.
 - **Monitoring**: **Azure Application Insights** (`Microsoft.ApplicationInsights.AspNetCore`) — telemetry auto-collected.
-- **CI**: GitHub Actions `ci.yml` runs on every PR — builds backend + frontend, runs xUnit tests.
-- **CD**: GitHub Actions `deploy.yml` runs on push to `main` — test → build Docker → push to ACR → deploy App Service → deploy SWA.
-- Production URL: ``
+- **CI**: GitHub Actions `ci.yml` — builds backend + frontend, runs xUnit tests on every PR. (planned — not yet created)
+- **CD**: GitHub Actions `deploy.yml` — test → build Docker → push to ACR → deploy App Service → deploy SWA on push to `main`. (planned — not yet created)
 
 ---
 
