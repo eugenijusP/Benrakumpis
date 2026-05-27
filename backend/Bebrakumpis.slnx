@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Bebrakumpis.API/Bebrakumpis.API.csproj" />
+    <Project Path="src/Bebrakumpis.Application/Bebrakumpis.Application.csproj" />
+    <Project Path="src/Bebrakumpis.Domain/Bebrakumpis.Domain.csproj" />
+    <Project Path="src/Bebrakumpis.Infrastructure/Bebrakumpis.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bebrakumpis.Tests/Bebrakumpis.Tests.csproj" />
+  </Folder>
+</Solution>
