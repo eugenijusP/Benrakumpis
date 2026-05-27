@@ -29,6 +29,7 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         _keepAlive = new SqliteConnection($"DataSource={_dbName};Mode=Memory;Cache=Shared");
         await _keepAlive.OpenAsync();
+        _keepAlive.CreateFunction("CONCAT", (string? a, string? b, string? c) => string.Concat(a, b, c));
         await _keepAlive.ExecuteAsync("""
             CREATE TABLE IF NOT EXISTS users (
                 id            TEXT    NOT NULL PRIMARY KEY,

@@ -12,6 +12,5 @@ public class Booking
     public Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
     // Populated via JOIN in GetByMonthAsync — not stored in the bookings table
-    public string? CreatorFirstName { get; set; }
-    public string? CreatorLastName { get; set; }
+    public string? CreatedByName { get; set; }
 }
