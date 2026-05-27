@@ -257,8 +257,7 @@ function showTooltip(e: MouseEvent, b: Booking): void {
     <div class="bh-cal-tooltip-title">${escHtml(b.displayText)}</div>
     <div class="bh-cal-tooltip-row">${escHtml(b.startDate)} – ${escHtml(b.endDate)}</div>
     ${b.notes ? `<div class="bh-cal-tooltip-row">${escHtml(b.notes)}</div>` : ''}
-    ${b.createdByName ? `<div class="bh-cal-tooltip-row">Added by ${escHtml(b.createdByName)}</div>` : ''}
-    ${b.createdAt ? `<div class="bh-cal-tooltip-row" style="font-size:0.7rem;opacity:0.6">${new Date(b.createdAt).toLocaleDateString()}</div>` : ''}
+    ${b.createdByName ? `<div class="bh-cal-tooltip-row">Added by ${escHtml(b.createdByName)}${b.createdAt ? ` on ${new Date(b.createdAt).toLocaleDateString()}` : ''}</div>` : ''}
   `;
   document.body.appendChild(_tooltip);
   positionTooltip(e);
