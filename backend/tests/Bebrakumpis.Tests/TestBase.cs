@@ -1,4 +1,5 @@
 using System.Data;
+using Bebrakumpis.Application.Interfaces;
 using Bebrakumpis.Domain.Entities;
 using Bebrakumpis.Infrastructure.Persistence;
 using Dapper;
@@ -59,6 +60,12 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 created_by   TEXT    NOT NULL REFERENCES users(id),
                 created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
             );
+            CREATE TABLE IF NOT EXISTS pictures (
+                id          TEXT    NOT NULL PRIMARY KEY,
+                blob_url    TEXT    NOT NULL,
+                "order"     INTEGER NOT NULL DEFAULT 0,
+                uploaded_at TEXT    NOT NULL DEFAULT (datetime('now'))
+            );
             """);
     }
 
@@ -76,10 +83,14 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         });
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDbConnectionFactory));
-            if (descriptor is not null) services.Remove(descriptor);
+            var dbDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDbConnectionFactory));
+            if (dbDescriptor is not null) services.Remove(dbDescriptor);
             services.AddScoped<IDbConnectionFactory>(_ =>
                 new SqliteConnectionFactory($"DataSource={_dbName};Mode=Memory;Cache=Shared"));
+
+            var blobDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IBlobStorageService));
+            if (blobDescriptor is not null) services.Remove(blobDescriptor);
+            services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
         });
     }
 
@@ -141,6 +152,22 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return booking;
     }
 
+    public async Task<Picture> SeedPictureAsync(string blobUrl = "https://fake.blob.core.windows.net/gallery/test.jpg",
+        int order = 0)
+    {
+        var picture = new Picture
+        {
+            Id = Guid.NewGuid(),
+            BlobUrl = blobUrl,
+            Order = order,
+            UploadedAt = DateTime.UtcNow
+        };
+        await _keepAlive!.ExecuteAsync(
+            "INSERT OR IGNORE INTO pictures (id, blob_url, \"order\", uploaded_at) VALUES (@Id, @BlobUrl, @Order, @UploadedAt)",
+            picture);
+        return picture;
+    }
+
     public new async Task DisposeAsync()
     {
         if (_keepAlive is not null)
@@ -152,4 +179,13 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 public class SqliteConnectionFactory(string connectionString) : IDbConnectionFactory
 {
     public IDbConnection CreateConnection() => new SqliteConnection(connectionString);
+}
+
+public class FakeBlobStorageService : IBlobStorageService
+{
+    public Task<string> UploadAsync(Stream content, string contentType, string blobName, CancellationToken cancellationToken = default)
+        => Task.FromResult($"https://fake.blob.core.windows.net/gallery/{blobName}");
+
+    public Task DeleteByUrlAsync(string blobUrl, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }

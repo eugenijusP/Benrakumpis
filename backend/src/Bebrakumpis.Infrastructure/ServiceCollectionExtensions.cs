@@ -15,8 +15,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IHouseRepository, HouseRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IPictureRepository, PictureRepository>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
         return services;
     }
 }

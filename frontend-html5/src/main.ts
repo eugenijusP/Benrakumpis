@@ -5,6 +5,7 @@ import { renderLogin } from './pages/login';
 import { renderAdminHouses } from './pages/adminHouses';
 import { renderAdminUsers } from './pages/adminUsers';
 import { renderCalendar } from './pages/calendar';
+import { renderGallery } from './pages/gallery';
 import { router } from './router';
 
 function requireAuth(): boolean {
@@ -26,6 +27,10 @@ router.on('/', async () => {
 
 router.on('/calendar', async () => {
   await renderCalendar();
+});
+
+router.on('/gallery', async () => {
+  await renderGallery();
 });
 
 router.on('/admin/houses', async () => {
