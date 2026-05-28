@@ -9,5 +9,4 @@ public interface IBookingRepository
     Task<Guid> CreateAsync(Booking booking, CancellationToken cancellationToken = default);
     Task UpdateAsync(Booking booking, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<bool> ExistsByHouseAsync(Guid houseId, CancellationToken cancellationToken = default);
 }

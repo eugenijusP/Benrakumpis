@@ -47,7 +47,7 @@ public class BookingsController(IMediator mediator) : ControllerBase
         if (!result.IsSuccess)
             return result.ToProblemResult(this);
 
-        return CreatedAtAction(nameof(GetByMonth), new { }, result.Value);
+        return Created(string.Empty, result.Value);
     }
 
     [HttpPut("{id:guid}")]

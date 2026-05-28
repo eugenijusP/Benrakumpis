@@ -70,12 +70,5 @@ public class BookingRepository(IDbConnectionFactory connectionFactory) : IBookin
         await connection.ExecuteAsync(cmd);
     }
 
-    public async Task<bool> ExistsByHouseAsync(Guid houseId, CancellationToken cancellationToken = default)
-    {
-        using IDbConnection connection = connectionFactory.CreateConnection();
-        var cmd = new CommandDefinition("""
-            SELECT COUNT(1) FROM bookings WHERE house_id = @HouseId
-            """, new { HouseId = houseId }, cancellationToken: cancellationToken);
-        return await connection.ExecuteScalarAsync<int>(cmd) > 0;
-    }
+
 }
