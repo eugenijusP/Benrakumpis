@@ -33,3 +33,10 @@ export interface Booking {
   createdByName: string | null;
   createdAt: string | null;
 }
+
+export interface Picture {
+  id: string;
+  blobUrl: string;
+  order: number;
+  uploadedAt: string;
+}
