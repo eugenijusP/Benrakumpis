@@ -24,6 +24,10 @@ public class UpdateHouseCommandHandler(
         if (house is null)
             return Result<HouseResponse>.NotFound($"House '{command.Id}' not found.");
 
+        if (!string.Equals(house.Name, command.Name, StringComparison.OrdinalIgnoreCase)
+            && await houseRepository.ExistsForOtherAsync(command.Name, command.Id, ct))
+            return Result<HouseResponse>.Conflict($"A house named '{command.Name}' already exists.");
+
         house.Name = command.Name;
         house.BookingColor = command.BookingColor;
         house.Description = command.Description;

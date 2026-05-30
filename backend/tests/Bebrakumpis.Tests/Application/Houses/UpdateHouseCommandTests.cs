@@ -104,4 +104,56 @@ public class UpdateHouseCommandTests
         Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
         _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
     }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnValidationFailure_WhenAmenitiesExceedMaxCount()
+    {
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(Guid.NewGuid(), "Name", "#3b82f6", null, null, Enumerable.Range(1, 11).Select(i => $"Amenity {i}").ToList()), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
+        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnValidationFailure_WhenPhotoUrlHasNoScheme()
+    {
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(Guid.NewGuid(), "Name", "#3b82f6", null, "not-a-url", []), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
+        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnConflict_WhenRenamedToExistingHouseName()
+    {
+        var id = Guid.NewGuid();
+        var house = new House { Id = id, Name = "Original Name", BookingColor = "#000000", CreatedAt = DateTime.UtcNow };
+        _repoMock.Setup(r => r.GetByIdAsync(id, default)).ReturnsAsync(house);
+        _repoMock.Setup(r => r.ExistsForOtherAsync("Taken Name", id, default)).ReturnsAsync(true);
+
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(id, "Taken Name", "#3b82f6", null, null, []), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.Conflict, result.ErrorType);
+        _repoMock.Verify(r => r.UpdateAsync(It.IsAny<House>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldSucceed_WhenNameIsUnchanged()
+    {
+        var id = Guid.NewGuid();
+        var house = new House { Id = id, Name = "Same Name", BookingColor = "#000000", CreatedAt = DateTime.UtcNow };
+        _repoMock.Setup(r => r.GetByIdAsync(id, default)).ReturnsAsync(house);
+
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(id, "Same Name", "#3b82f6", null, null, []), default);
+
+        Assert.True(result.IsSuccess);
+        _repoMock.Verify(r => r.ExistsForOtherAsync(It.IsAny<string>(), It.IsAny<Guid>(), default), Times.Never);
+    }
 }

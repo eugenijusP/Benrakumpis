@@ -135,9 +135,7 @@ function attachEvents(): void {
       const url = img.dataset['url'] ?? '';
       (document.getElementById('house-photo-url') as HTMLInputElement).value = url;
       updatePhotoPreview();
-      document.querySelectorAll<HTMLImageElement>('.bh-photo-pick').forEach(i =>
-        i.style.borderColor = i === img ? 'var(--accent)' : 'transparent'
-      );
+      syncPickerHighlight(url);
     });
   });
 

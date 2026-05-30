@@ -109,4 +109,24 @@ public class CreateHouseCommandTests
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
     }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnValidationFailure_WhenAmenitiesExceedMaxCount()
+    {
+        var result = await _handler.HandleAsync(
+            new CreateHouseCommand("Namas 1", "#3b82f6", null, null, Enumerable.Range(1, 11).Select(i => $"Amenity {i}").ToList()), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnValidationFailure_WhenPhotoUrlHasNoScheme()
+    {
+        var result = await _handler.HandleAsync(
+            new CreateHouseCommand("Namas 1", "#3b82f6", null, "not-a-url", []), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
+    }
 }

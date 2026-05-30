@@ -81,6 +81,15 @@ public class HouseRepository(IDbConnectionFactory connectionFactory) : IHouseRep
         return await connection.ExecuteScalarAsync<int>(cmd) > 0;
     }
 
+    public async Task<bool> ExistsForOtherAsync(string name, Guid excludeId, CancellationToken cancellationToken = default)
+    {
+        using IDbConnection connection = connectionFactory.CreateConnection();
+        var cmd = new CommandDefinition("""
+            SELECT COUNT(1) FROM houses WHERE name = @Name AND id != @ExcludeId
+            """, new { Name = name, ExcludeId = excludeId }, cancellationToken: cancellationToken);
+        return await connection.ExecuteScalarAsync<int>(cmd) > 0;
+    }
+
     public async Task<bool> HasBookingsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using IDbConnection connection = connectionFactory.CreateConnection();

@@ -208,6 +208,18 @@ public class HousesControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLif
     }
 
     [Fact]
+    public async Task Update_ShouldReturn409_WhenRenamedToExistingHouseName()
+    {
+        await _factory.SeedHouseAsync("Occupied Name");
+        var house = await _factory.SeedHouseAsync("Free Name");
+
+        var response = await _adminClient!.PutAsJsonAsync($"/api/v1/houses/{house.Id}",
+            new { name = "Occupied Name", bookingColor = "#3b82f6" });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
     public async Task GetById_ShouldReturnEmptyAmenities_WhenAmenitiesColumnIsNull()
     {
         var house = await _factory.SeedLegacyHouseAsync("Null Amenities House");
