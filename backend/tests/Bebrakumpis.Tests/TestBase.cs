@@ -136,6 +136,15 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return house;
     }
 
+    public async Task<House> SeedLegacyHouseAsync(string name = "Legacy House", string bookingColor = "#3b82f6")
+    {
+        var house = new House { Id = Guid.NewGuid(), Name = name, BookingColor = bookingColor, CreatedAt = DateTime.UtcNow };
+        await _keepAlive!.ExecuteAsync(
+            "INSERT OR IGNORE INTO houses (id, name, booking_color, created_at) VALUES (@Id, @Name, @BookingColor, @CreatedAt)",
+            new { house.Id, house.Name, house.BookingColor, house.CreatedAt });
+        return house;
+    }
+
     public async Task<Booking> SeedBookingAsync(Guid houseId, Guid createdBy,
         string type = "B", string displayText = "Test booking",
         DateTime? startDate = null, DateTime? endDate = null, string? notes = null)

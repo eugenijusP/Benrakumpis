@@ -55,4 +55,53 @@ public class UpdateHouseCommandTests
         Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
         _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
     }
+
+    [Fact]
+    public async Task HandleAsync_ShouldMapRichFields_WhenRichDataIsProvided()
+    {
+        var id = Guid.NewGuid();
+        var house = new House { Id = id, Name = "Old Name", BookingColor = "#000000", CreatedAt = DateTime.UtcNow };
+        _repoMock.Setup(r => r.GetByIdAsync(id, default)).ReturnsAsync(house);
+
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(id, "New Name", "#3b82f6", "A cosy cabin", "https://example.com/photo.jpg", ["Lake view", "3 bedrooms"]), default);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("A cosy cabin", result.Value.Description);
+        Assert.Equal("https://example.com/photo.jpg", result.Value.PhotoUrl);
+        Assert.Equal(["Lake view", "3 bedrooms"], result.Value.Amenities);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnValidationFailure_WhenDescriptionExceedsMaxLength()
+    {
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(Guid.NewGuid(), "Name", "#3b82f6", new string('x', 2001), null, []), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
+        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnValidationFailure_WhenAmenityIsEmpty()
+    {
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(Guid.NewGuid(), "Name", "#3b82f6", null, null, ["Lake view", ""]), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
+        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnValidationFailure_WhenAmenityExceedsMaxLength()
+    {
+        var result = await _handler.HandleAsync(
+            new UpdateHouseCommand(Guid.NewGuid(), "Name", "#3b82f6", null, null, [new string('x', 101)]), default);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.ValidationFailure, result.ErrorType);
+        _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), default), Times.Never);
+    }
 }
